@@ -8,9 +8,17 @@ import { dayNumber, streak } from '../lib/streak'
 const WEEKS = 53
 const DAY_MS = 86_400_000
 // Solves in a day needed for each shade, lightest first.
-const LEVELS = [1, 5, 15, 30]
+const LEVELS = [1, 12, 50, 100]
 
 const level = (n: number) => LEVELS.filter((t) => n >= t).length
+
+/** What each shade means, for the key: "No solves", "1-11 solves", ..., "100+ solves". */
+const levelLabel = (l: number) =>
+  l === 0
+    ? 'No solves'
+    : l === LEVELS.length
+      ? `${LEVELS[l - 1]}+ solves`
+      : `${LEVELS[l - 1]}–${LEVELS[l] - 1} solves`
 
 /** A day number back to its date, read in UTC because that's how day numbers are made. */
 const toDate = (day: number) => new Date(day * DAY_MS)
@@ -208,10 +216,10 @@ export function ActivityGraph() {
           )}
         </div>
       )}
-      <p className="activity-key muted" aria-hidden="true">
+      <p className="activity-key muted">
         Fewer
         {[0, 1, 2, 3, 4].map((l) => (
-          <span key={l} className="activity-cell" data-level={l} />
+          <span key={l} className="activity-cell" data-level={l} data-label={levelLabel(l)} aria-label={levelLabel(l)} />
         ))}
         More
       </p>
