@@ -11,6 +11,7 @@ import { CubePreview } from './CubePreview'
 import { Menu } from './Menu'
 import { Shape } from './Shape'
 import { ImportScrambles } from './ImportScrambles'
+import { AverageDetail } from './AverageDetail'
 import { SolveDetail } from './SolveDetail'
 import { StatsTable } from './StatsTable'
 import { TimesList } from './TimesList'
@@ -33,6 +34,7 @@ export function TimerView({
   const { remove, clear, toast } = useUndoDelete()
 
   const [openId, setOpenId] = useState<string | null>(null)
+  const [openAvg, setOpenAvg] = useState<{ end: number; size: number } | null>(null)
   const [menuOpen, setMenuOpen] = useState(false)
   const [importing, setImporting] = useState(false)
   const [notice, setNotice] = useState<string | null>(null)
@@ -70,7 +72,7 @@ export function TimerView({
 
   const timer = useTimer({
     inspection: settings.inspection,
-    enabled: !openId && !menuOpen && !importing && !settings.typing && scramble !== null,
+    enabled: !openId && !openAvg && !menuOpen && !importing && !settings.typing && scramble !== null,
     onFinish,
   })
 
@@ -96,7 +98,7 @@ export function TimerView({
 
   // Quick keys for the solve that just finished.
   useEffect(() => {
-    if (openId || menuOpen || importing || timer.phase !== 'idle' || !last || last.id !== justSolvedId) return
+    if (openId || openAvg || menuOpen || importing || timer.phase !== 'idle' || !last || last.id !== justSolvedId) return
     const onKey = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement) return
       if (e.key === '2') togglePenalty('+2')
@@ -107,7 +109,7 @@ export function TimerView({
       dispatch({ type: 'setPenalty', solveId: last.id, penalty: last.penalty === p ? 'none' : p })
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [openId, menuOpen, importing, timer.phase, last, justSolvedId, dispatch, remove])
+  }, [openId, openAvg, menuOpen, importing, timer.phase, last, justSolvedId, dispatch, remove])
 
   const display = (() => {
     const d = settings.decimals
@@ -310,7 +312,12 @@ export function TimerView({
         ) : (
           <div className="dial" data-phase={timer.phase}>
             <span className="disc" aria-hidden="true" />
-            <p className="digits" aria-live="off" data-long={display.length > 5 || undefined}>
+            <p
+              className="digits"
+              aria-live="off"
+              data-long={display.length > 5 || undefined}
+              data-hidden={(timer.phase === 'running' && settings.focusMode && settings.focusHideTime) || undefined}
+            >
               {display}
             </p>
             {(timer.phase === 'idle' || timer.phase === 'stopped') && (
@@ -424,7 +431,9 @@ export function TimerView({
           )}
         </header>
         {settings.sidePanel === 'times' ? (
-          <TimesList solves={current.solves} decimals={settings.decimals} onOpen={setOpenId} />
+          <TimesList solves={current.solves} decimals={settings.decimals} onOpen={setOpenId}
+          onOpenAverage={(end, size) => setOpenAvg({ end, size })}
+        />
         ) : (
           <div role="tabpanel">
             <StatsTable solves={current.solves} stats={stats} decimals={settings.decimals} />
@@ -461,6 +470,16 @@ export function TimerView({
           }}
           onClose={() => setOpenId(null)}
           onReconstruct={event.puzzle === '3x3x3' ? () => onReconstruct(current.solves[open].id) : undefined}
+        />
+      )}
+      {openAvg && (
+        <AverageDetail
+          solves={current.solves}
+          end={openAvg.end}
+          size={openAvg.size}
+          eventName={event.name}
+          decimals={settings.decimals}
+          onClose={() => setOpenAvg(null)}
         />
       )}
       {toast}

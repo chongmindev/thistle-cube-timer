@@ -115,12 +115,15 @@ export function SettingsView() {
 
       <section>
         <h2>Display</h2>
-        <Row title="Focus mode" detail="Fade everything but the time while you inspect and solve.">
+        <Row
+          title="Focus mode"
+          detail="Fade everything but the time while you inspect and solve. Hide time also hides the clock until you stop."
+        >
           <Choice
             name="focus"
-            value={s.focusMode ? 'on' : 'off'}
-            options={[...ON_OFF]}
-            onChange={(v) => set({ focusMode: v === 'on' })}
+            value={!s.focusMode ? 'off' : s.focusHideTime ? 'blank' : 'on'}
+            options={[...ON_OFF, { value: 'blank', label: 'Hide time' }]}
+            onChange={(v) => set({ focusMode: v !== 'off', focusHideTime: v === 'blank' })}
           />
         </Row>
         <Row title="Scramble preview">

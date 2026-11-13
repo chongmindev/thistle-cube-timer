@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
-import { formatDate, formatMs, formatSolve } from '../lib/format'
+import { formatDate, formatSolve } from '../lib/format'
 import { reconLines, reconSummary } from '../lib/recon/text'
 import { cardText, drawCard, type CardData } from '../lib/shareCard'
-import { effective, rolling, type Penalty, type Solve } from '../lib/stats'
+import { effective, type Penalty, type Solve } from '../lib/stats'
 
 const PENALTIES: { value: Penalty; label: string }[] = [
   { value: 'none', label: 'No penalty' },
@@ -51,8 +51,6 @@ export function SolveDetail({
       event: eventName,
       date: new Date(solve.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }),
       scramble: solve.scramble,
-      ao5: formatMs(rolling(solves, 5)[index], decimals),
-      ao12: formatMs(rolling(solves, 12)[index], decimals),
       isBest: solve.penalty !== 'dnf' && effective(solve) === best,
       solveNumber: index + 1,
       session: sessionName,

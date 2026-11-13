@@ -5,6 +5,7 @@ import { EVENTS, getEvent } from '../lib/events'
 import { formatDate, formatMs } from '../lib/format'
 import { useStore } from '../lib/store'
 import { sessionStats } from '../lib/stats'
+import { AverageDetail } from './AverageDetail'
 import { SolveDetail } from './SolveDetail'
 import { StatsTable } from './StatsTable'
 import { TimesList } from './TimesList'
@@ -22,6 +23,7 @@ export function SessionsView({
   const [renaming, setRenaming] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [openId, setOpenId] = useState<string | null>(null)
+  const [openAvg, setOpenAvg] = useState<{ end: number; size: number } | null>(null)
   const { remove, clear, deleteSession, toast } = useUndoDelete()
   const open = current.solves.findIndex((s) => s.id === openId)
 
@@ -115,7 +117,9 @@ export function SessionsView({
           {stats.dnfs > 0 && `, ${stats.dnfs} DNF`}
         </p>
 
-        <TimesList solves={current.solves} decimals={decimals} onOpen={setOpenId} />
+        <TimesList solves={current.solves} decimals={decimals} onOpen={setOpenId}
+          onOpenAverage={(end, size) => setOpenAvg({ end, size })}
+        />
       </article>
 
       {open >= 0 && (
@@ -132,6 +136,16 @@ export function SessionsView({
           }}
           onClose={() => setOpenId(null)}
           onReconstruct={getEvent(current.event).puzzle === '3x3x3' ? () => onReconstruct(current.solves[open].id) : undefined}
+        />
+      )}
+      {openAvg && (
+        <AverageDetail
+          solves={current.solves}
+          end={openAvg.end}
+          size={openAvg.size}
+          eventName={getEvent(current.event).name}
+          decimals={decimals}
+          onClose={() => setOpenAvg(null)}
         />
       )}
       {toast}

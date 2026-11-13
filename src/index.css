@@ -575,6 +575,11 @@ kbd {
   color: #000;
 }
 
+/* Focus mode, hide time: the disc alone says the clock is running. */
+.digits[data-hidden] {
+  visibility: hidden;
+}
+
 /* Typing mode: the circle frames a text field instead of a clock. */
 .typed {
   width: 82cqh;
@@ -855,33 +860,12 @@ kbd {
   font-weight: 600;
 }
 
-/* The time's button covers its whole row, so anywhere on the row opens the solve. */
-.times tbody tr {
-  position: relative;
+.times-avg {
+  font-variant-numeric: inherit;
 }
 
-.times-time::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  cursor: pointer;
-}
-
-/* A pressed transform would shrink the cover back to the button and lose the click. */
-.times-time:active:not(:disabled) {
-  transform: none;
-}
-
-.times-time:focus-visible {
-  outline: none;
-}
-
-.times-time:focus-visible::after {
-  outline: 2px solid var(--blue);
-  outline-offset: -2px;
-}
-
-.times tbody tr:hover td {
+.times-time:hover,
+.times-avg:hover {
   color: var(--blue);
 }
 

@@ -8,8 +8,6 @@ export interface CardData {
   event: string
   date: string
   scramble: string
-  ao5: string
-  ao12: string
   isBest: boolean
   solveNumber: number
   session: string
@@ -152,37 +150,24 @@ export async function drawCard(data: CardData): Promise<HTMLCanvasElement> {
     ctx.fillText('Personal best', tx, ty + 56)
   }
 
-  // Stats row with a heavy rule above and thin dividers, like the app.
-  const sy = 1100
+  // Scramble along the bottom under a heavy rule, solve number on the right.
+  const sy = 1080
   ctx.fillStyle = C.ink
   ctx.fillRect(PAD, sy, W - PAD * 2, 6)
-  const cols = [
-    ['ao5', data.ao5],
-    ['ao12', data.ao12],
-    ['solve', String(data.solveNumber)],
-  ]
-  const colW = (W - PAD * 2) / 3
-  cols.forEach(([label, value], i) => {
-    const x = PAD + i * colW + (i ? 28 : 0)
-    if (i) ctx.fillRect(PAD + i * colW, sy + 6, 2, 104)
-    ctx.textAlign = 'left'
-    ctx.fillStyle = C.muted
-    ctx.font = font(500, 28)
-    ctx.fillText(label, x, sy + 46)
-    ctx.fillStyle = C.ink
-    ctx.font = font(500, 52)
-    ctx.fillText(value, x, sy + 104)
-  })
-
-  // Scramble along the bottom, under a hairline.
-  ctx.fillStyle = C.ink
-  ctx.fillRect(PAD, sy + 134, W - PAD * 2, 2)
+  ctx.fillStyle = C.muted
+  ctx.font = font(500, 28)
   ctx.textAlign = 'left'
-  ctx.font = font(400, 26)
+  ctx.fillText('Scramble', PAD, sy + 48)
+  ctx.textAlign = 'right'
+  ctx.fillText(`Solve ${data.solveNumber}`, W - PAD, sy + 48)
+
+  ctx.fillStyle = C.ink
+  ctx.textAlign = 'left'
+  ctx.font = font(400, 36)
   const lines = wrap(ctx, data.scramble, W - PAD * 2)
-  const shown = lines.slice(0, 2)
-  if (lines.length > 2) shown[1] = shown[1] + '  …'
-  shown.forEach((l, i) => ctx.fillText(l, PAD, sy + 180 + i * 36))
+  const shown = lines.slice(0, 3)
+  if (lines.length > 3) shown[2] = shown[2] + '  …'
+  shown.forEach((l, i) => ctx.fillText(l, PAD, sy + 100 + i * 46))
 
   return canvas
 }
@@ -192,10 +177,24 @@ export function cardText(d: CardData): string {
   const time = d.penalty === '+2' ? `${d.time.replace(/\+$/, '')} (+2)` : d.time
   const lines = [`${d.event}: ${time}`]
 
-  if (d.ao12 !== '-') lines.push('', `ao12 ${d.ao12}`)
-
   lines.push('', d.scramble)
   if (d.recon) lines.push('', ...d.recon.lines, d.recon.summary)
+  lines.push('', 'Timed with Thistle')
+  return lines.join('\n')
+}
+
+/**
+ * Plain text for an average: the result, then each solve's time and scramble in order.
+ * Times dropped from the average are in parentheses, as cubers write them.
+ */
+export function averageText(o: {
+  event: string
+  label: string
+  average: string
+  solves: { time: string; scramble: string; dropped: boolean }[]
+}): string {
+  const lines = [`${o.event} ${o.label}: ${o.average}`, '']
+  o.solves.forEach((s, i) => lines.push(`${i + 1}. ${s.dropped ? `(${s.time})` : s.time}   ${s.scramble}`))
   lines.push('', 'Timed with Thistle')
   return lines.join('\n')
 }

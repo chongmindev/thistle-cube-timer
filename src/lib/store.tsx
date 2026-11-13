@@ -17,6 +17,7 @@ export type Theme = 'system' | 'light' | 'dark'
 export interface Settings {
   inspection: boolean
   focusMode: boolean
+  focusHideTime: boolean // focus mode also hides the running time
   runningDisplay: RunningDisplay
   decimals: 2 | 3
   theme: Theme
@@ -38,6 +39,7 @@ export interface State {
 export const DEFAULT_SETTINGS: Settings = {
   inspection: false,
   focusMode: true,
+  focusHideTime: false,
   runningDisplay: 'live',
   decimals: 2,
   theme: 'system',
