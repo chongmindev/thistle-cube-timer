@@ -112,3 +112,13 @@ export function sessionStats(solves: Solve[]) {
     averages,
   }
 }
+
+/**
+ * Best possible ao5 after the next solve: with the last four in, a perfect fifth is dropped as
+ * the best, so the slowest of the four is dropped as the worst and the other three count.
+ */
+export function bpa5(solves: Solve[]): number | null {
+  if (solves.length < 4) return null
+  const last = solves.slice(-4).map(effective).sort((a, b) => a - b)
+  return mean(last.slice(0, 3))
+}

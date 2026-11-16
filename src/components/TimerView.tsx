@@ -5,7 +5,7 @@ import { useUndoDelete } from '../hooks/useUndoDelete'
 import { EVENTS, getEvent } from '../lib/events'
 import { formatMs, formatSolve, parseTyped, uid } from '../lib/format'
 import { useStore } from '../lib/store'
-import { sessionStats, type Penalty } from '../lib/stats'
+import { bpa5, sessionStats, type Penalty } from '../lib/stats'
 import { useWca } from '../lib/wca'
 import { CubePreview } from './CubePreview'
 import { Menu } from './Menu'
@@ -338,6 +338,10 @@ export function TimerView({
             <div>
               <dt>ao5</dt>
               <dd>{formatMs(ao5.current, settings.decimals)}</dd>
+            </div>
+            <div>
+              <dt>bpa5</dt>
+              <dd title="Best possible ao5 after your next solve">{formatMs(bpa5(current.solves), settings.decimals)}</dd>
             </div>
             <div>
               <dt>ao12</dt>
