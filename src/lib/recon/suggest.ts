@@ -109,11 +109,32 @@ const TRIGGERS: Record<Slot, string[]> = {
   BL: ["L U L'", "L U' L'", "L U2 L'", "B' U B", "B' U' B"],
 }
 
+// The face each face becomes when a y-axis rotation is taken out of an algorithm that follows it.
+const UNROTATE: Record<string, Record<string, string>> = {
+  y: { F: 'R', R: 'B', B: 'L', L: 'F' },
+  "y'": { F: 'L', L: 'B', B: 'R', R: 'F' },
+  y2: { F: 'B', B: 'F', R: 'L', L: 'R' },
+}
+
+/** The same turns without the rotation in front, or null if a move can't be relabelled. */
+function unrotate(rot: string, moves: string[]): string[] | null {
+  const map = UNROTATE[rot]
+  const out: string[] = []
+  for (const m of moves) {
+    const face = m[0]
+    if (/[MSExyz]/.test(face)) return null
+    const upper = face.toUpperCase()
+    const to = map[upper] ?? upper
+    out.push((face === upper ? to : to.toLowerCase()) + m.slice(1))
+  }
+  return out
+}
+
 function score(moves: string[]): number {
   return (
     moveCount(moves) +
-    moves.filter((m) => /^[xyz]/.test(m)).length * 0.6 +
-    moves.filter((m) => m[0] === 'B').length * 0.5 +
+    moves.filter((m) => /^[xyz]/.test(m)).length * 1.2 +
+    moves.filter((m) => /^[Bb]/.test(m)).length * 0.5 +
     moves.filter((m) => /^[RLFB]2/.test(m)).length * 0.7
   )
 }
@@ -136,7 +157,13 @@ function pairCandidates(s: State, pair: Pair): string[][] {
       const slot = slotOfPair(s1, pair)
       if (slot !== 'FR' && slot !== 'FL') continue
       const algs = slot === 'FR' ? FR : FL
-      for (const pre of AUF) for (const alg of algs) consider([...prefix, ...rot, ...pre, ...alg])
+      for (const pre of AUF)
+        for (const alg of algs) {
+          consider([...prefix, ...rot, ...pre, ...alg])
+          // The same insert done straight into a back slot, no rotation.
+          const plain = rot.length ? unrotate(rot[0], [...pre, ...alg]) : null
+          if (plain) consider([...prefix, ...plain])
+        }
     }
   }
 
